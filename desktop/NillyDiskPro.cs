@@ -25,8 +25,8 @@ using System.Windows.Forms;
 [assembly: AssemblyProduct("NillyDisk Pro")]
 [assembly: AssemblyCopyright("Copyright (c) 2026 Nilly graphics (Sotiris Christos) — https://nillygraphics.com/")]
 [assembly: AssemblyTrademark("Nilly graphics / Nillygraphics — Sotiris Christos")]
-[assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
+[assembly: AssemblyVersion("1.0.1.0")]
+[assembly: AssemblyFileVersion("1.0.1.0")]
 
 namespace NillyDiskPro
 {
@@ -1660,7 +1660,7 @@ namespace NillyDiskPro
             _btnScan.Enabled = true;
             _btnStop.Enabled = false;
             _lastScan = res;
-            _lblScanStatus.Text = string.Format("{0} {1:N0} αρχεία · {2:N0} φάκελοι · {3} ({4:0.1}s)",
+            _lblScanStatus.Text = string.Format("{0} {1:N0} αρχεία · {2:N0} φάκελοι · {3} ({4:0.0}s)",
                 res.Cancelled ? "Διακόπηκε:" : "Ολοκληρώθηκε:", res.TotalFiles, res.TotalDirs, SafetyGuard.FmtBytes(res.TotalBytes), res.ElapsedSec);
 
             ShowFolder(res.Root);
@@ -1730,7 +1730,7 @@ namespace NillyDiskPro
                 ListViewItem it = new ListViewItem(st.Ext);
                 it.SubItems.Add(SafetyGuard.FmtBytes(st.TotalBytes));
                 it.SubItems.Add(st.FileCount.ToString("N0"));
-                it.SubItems.Add(pct.ToString("0.1") + "%");
+                it.SubItems.Add(pct.ToString("0.0") + "%");
                 _lvExts.Items.Add(it);
             }
             _lvExts.EndUpdate();
