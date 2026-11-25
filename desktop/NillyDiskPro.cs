@@ -25,8 +25,8 @@ using System.Windows.Forms;
 [assembly: AssemblyProduct("NillyDisk Pro")]
 [assembly: AssemblyCopyright("Copyright (c) 2026 Nilly graphics (Sotiris Christos) — https://nillygraphics.com/")]
 [assembly: AssemblyTrademark("Nilly graphics / Nillygraphics — Sotiris Christos")]
-[assembly: AssemblyVersion("1.0.2.0")]
-[assembly: AssemblyFileVersion("1.0.2.0")]
+[assembly: AssemblyVersion("1.1.0.0")]
+[assembly: AssemblyFileVersion("1.1.0.0")]
 
 namespace NillyDiskPro
 {
@@ -1805,10 +1805,40 @@ namespace NillyDiskPro
             catch { }
         }
 
+        private static string FindSiblingExe(string folder, string exeName)
+        {
+            try
+            {
+                string appData = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"NillySuite\" + folder + @"\" + exeName);
+                if (File.Exists(appData)) return appData;
+                DirectoryInfo par = Directory.GetParent(AppDomain.CurrentDomain.BaseDirectory.TrimEnd('\\'));
+                if (par != null)
+                {
+                    string sib = Path.Combine(Path.Combine(par.FullName, folder), exeName);
+                    if (File.Exists(sib)) return sib;
+                }
+            }
+            catch { }
+            return null;
+        }
+
         private ContextMenuStrip BuildNodeContextMenu(Func<DiskNode> getter)
         {
             ContextMenuStrip cms = new ContextMenuStrip();
-            cms.Items.Add("📂 Άνοιγμα στον Explorer", null, delegate
+            string filesExe = FindSiblingExe("NillyFilesPro", "NillyFilesPro.exe");
+            if (filesExe != null)
+            {
+                cms.Items.Add("📂 Άνοιγμα σε NillyFiles Pro", null, delegate
+                {
+                    DiskNode n = getter();
+                    if (n != null)
+                    {
+                        string dir = n.IsDir ? n.FullPath : Path.GetDirectoryName(n.FullPath);
+                        try { Process.Start(new ProcessStartInfo(filesExe, "\"" + dir + "\"") { WorkingDirectory = Path.GetDirectoryName(filesExe), UseShellExecute = true }); } catch { }
+                    }
+                });
+            }
+            cms.Items.Add("📂 Άνοιγμα στον Windows Explorer", null, delegate
             {
                 DiskNode n = getter();
                 if (n != null) OpenInExplorer(n.FullPath, !n.IsDir);
