@@ -25,8 +25,8 @@ using System.Windows.Forms;
 [assembly: AssemblyProduct("NillyDisk Pro")]
 [assembly: AssemblyCopyright("Copyright (c) 2026 Nilly graphics (Sotiris Christos) — https://nillygraphics.com/")]
 [assembly: AssemblyTrademark("Nilly graphics / Nillygraphics — Sotiris Christos")]
-[assembly: AssemblyVersion("1.1.0.0")]
-[assembly: AssemblyFileVersion("1.1.0.0")]
+[assembly: AssemblyVersion("1.1.1.0")]
+[assembly: AssemblyFileVersion("1.1.1.0")]
 
 namespace NillyDiskPro
 {
@@ -1211,6 +1211,7 @@ namespace NillyDiskPro
         public MainForm(string initialPath, bool smokeMode)
         {
             _initialPath = initialPath;
+            _dark = ReadSuiteDark(true);
             Text = "NillyDisk Pro — Disk Analyzer, Treemap, SHA-256 Duplicates & Safe Cleaner";
             Size = new Size(1180, 720);
             MinimumSize = new Size(860, 540);
@@ -1242,6 +1243,22 @@ namespace NillyDiskPro
                     Native.TrimMemory();
                 };
             }
+        }
+
+        private static bool ReadSuiteDark(bool fallback)
+        {
+            try
+            {
+                string p = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"NillySuite\suite.theme");
+                if (File.Exists(p))
+                {
+                    string s = File.ReadAllText(p, Encoding.ASCII).Trim();
+                    if (s.Equals("light", StringComparison.OrdinalIgnoreCase)) return false;
+                    if (s.Equals("dark", StringComparison.OrdinalIgnoreCase)) return true;
+                }
+            }
+            catch { }
+            return fallback;
         }
 
         private void BuildUi()
