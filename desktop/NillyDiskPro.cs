@@ -25,8 +25,8 @@ using System.Windows.Forms;
 [assembly: AssemblyProduct("NillyDisk Pro")]
 [assembly: AssemblyCopyright("Copyright (c) 2026 Nilly graphics (Sotiris Christos) — https://nillygraphics.com/")]
 [assembly: AssemblyTrademark("Nilly graphics / Nillygraphics — Sotiris Christos")]
-[assembly: AssemblyVersion("1.1.1.0")]
-[assembly: AssemblyFileVersion("1.1.1.0")]
+[assembly: AssemblyVersion("1.2.0.0")]
+[assembly: AssemblyFileVersion("1.2.0.0")]
 
 namespace NillyDiskPro
 {
@@ -1160,6 +1160,12 @@ namespace NillyDiskPro
         private bool _cancelScan = false;
         private ScanResult _lastScan;
         private DiskNode _currentDir;
+        private int _nodeSortCol = 1; private bool _nodeSortAsc = false;
+        private int _topSortCol = 1; private bool _topSortAsc = false;
+        private int _extSortCol = 1; private bool _extSortAsc = false;
+        private static readonly string[] NodeCols = new string[] { "Όνομα", "Μέγεθος", "% Χώρου", "Αρχεία" };
+        private static readonly string[] TopCols = new string[] { "Αρχείο", "Μέγεθος", "Τροποποίηση", "Διαδρομή" };
+        private static readonly string[] ExtCols = new string[] { "Τύπος (Ext)", "Σύνολο", "Αρχεία", "%" };
         private List<DupGroup> _dupGroups = new List<DupGroup>();
         private List<SafeCacheTarget> _cacheTargets = new List<SafeCacheTarget>();
 
@@ -1356,16 +1362,31 @@ namespace NillyDiskPro
                 BorderStyle = BorderStyle.None, OwnerDraw = true, Font = new Font("Segoe UI", 9f)
             };
             _lvNodes.Columns.Add("Όνομα", 230);
-            _lvNodes.Columns.Add("Μέγεθος", 92, HorizontalAlignment.Right);
+            _lvNodes.Columns.Add("Μέγεθος ▼", 92, HorizontalAlignment.Right);
             _lvNodes.Columns.Add("% Χώρου", 130);
             _lvNodes.Columns.Add("Αρχεία", 74, HorizontalAlignment.Right);
             _lvNodes.SizeChanged += delegate { FitAnalyzerColumns(); };
             _lvNodes.DrawColumnHeader += DrawListHeader;
             _lvNodes.DrawItem += delegate { };
             _lvNodes.DrawSubItem += DrawNodeSubItem;
+            _lvNodes.ColumnClick += delegate(object s, ColumnClickEventArgs e)
+            {
+                if (_nodeSortCol == e.Column) _nodeSortAsc = !_nodeSortAsc;
+                else { _nodeSortCol = e.Column; _nodeSortAsc = (e.Column == 0); }
+                SetSortHeaders(_lvNodes, NodeCols, _nodeSortCol, _nodeSortAsc);
+                if (_currentDir != null) ShowFolder(_currentDir);
+            };
+            _lvNodes.KeyDown += delegate(object s, KeyEventArgs e)
+            {
+                if (e.KeyCode == Keys.Back && _currentDir != null && _currentDir.Parent != null)
+                { ShowFolder(_currentDir.Parent); e.Handled = true; }
+            };
+            _lvNodes.ItemDrag += delegate(object s, ItemDragEventArgs e) { if (e.Button == MouseButtons.Left) DragOutDiskNodes(_lvNodes); };
             _lvNodes.DoubleClick += delegate
             {
                 if (_lvNodes.SelectedItems.Count == 0) return;
+                if ((_lvNodes.SelectedItems[0].Tag as string) == "UP")
+                { if (_currentDir != null && _currentDir.Parent != null) ShowFolder(_currentDir.Parent); return; }
                 DiskNode n = _lvNodes.SelectedItems[0].Tag as DiskNode;
                 ActivateNode(n);
             };
@@ -1409,11 +1430,19 @@ namespace NillyDiskPro
 
             SplitContainer sp = new SplitContainer { Dock = DockStyle.Fill, Orientation = Orientation.Vertical, SplitterDistance = 760, SplitterWidth = 5 };
 
-            _lvTopFiles = new ListView { Dock = DockStyle.Fill, View = View.Details, FullRowSelect = true, BorderStyle = BorderStyle.None, Font = new Font("Segoe UI", 9f) };
+            _lvTopFiles = new ListView { Dock = DockStyle.Fill, View = View.Details, FullRowSelect = true, MultiSelect = true, BorderStyle = BorderStyle.None, Font = new Font("Segoe UI", 9f) };
             _lvTopFiles.Columns.Add("Αρχείο", 220);
-            _lvTopFiles.Columns.Add("Μέγεθος", 90, HorizontalAlignment.Right);
+            _lvTopFiles.Columns.Add("Μέγεθος ▼", 90, HorizontalAlignment.Right);
             _lvTopFiles.Columns.Add("Τροποποίηση", 115);
             _lvTopFiles.Columns.Add("Διαδρομή", 330);
+            _lvTopFiles.ColumnClick += delegate(object s, ColumnClickEventArgs e)
+            {
+                if (_topSortCol == e.Column) _topSortAsc = !_topSortAsc;
+                else { _topSortCol = e.Column; _topSortAsc = (e.Column == 0 || e.Column == 3); }
+                SetSortHeaders(_lvTopFiles, TopCols, _topSortCol, _topSortAsc);
+                PopulateTopFilesList();
+            };
+            _lvTopFiles.ItemDrag += delegate(object s, ItemDragEventArgs e) { if (e.Button == MouseButtons.Left) DragOutDiskNodes(_lvTopFiles); };
             _lvTopFiles.DoubleClick += delegate
             {
                 if (_lvTopFiles.SelectedItems.Count > 0)
@@ -1426,9 +1455,16 @@ namespace NillyDiskPro
 
             _lvExts = new ListView { Dock = DockStyle.Fill, View = View.Details, FullRowSelect = true, BorderStyle = BorderStyle.None, Font = new Font("Segoe UI", 9f) };
             _lvExts.Columns.Add("Τύπος (Ext)", 100);
-            _lvExts.Columns.Add("Σύνολο", 95, HorizontalAlignment.Right);
+            _lvExts.Columns.Add("Σύνολο ▼", 95, HorizontalAlignment.Right);
             _lvExts.Columns.Add("Αρχεία", 75, HorizontalAlignment.Right);
             _lvExts.Columns.Add("%", 60, HorizontalAlignment.Right);
+            _lvExts.ColumnClick += delegate(object s, ColumnClickEventArgs e)
+            {
+                if (_extSortCol == e.Column) _extSortAsc = !_extSortAsc;
+                else { _extSortCol = e.Column; _extSortAsc = (e.Column == 0); }
+                SetSortHeaders(_lvExts, ExtCols, _extSortCol, _extSortAsc);
+                PopulateExtensionsList();
+            };
             _lvExts.DoubleClick += delegate
             {
                 if (_lvExts.SelectedItems.Count > 0) _txtFilterFiles.Text = _lvExts.SelectedItems[0].Text;
@@ -1466,6 +1502,7 @@ namespace NillyDiskPro
             _lvDups.Columns.Add("Τροποποίηση", 120);
             _lvDups.Columns.Add("Διαδρομή", 480);
             _lvDups.Columns.Add("Κατάσταση", 120);
+            _lvDups.ItemDrag += delegate(object s, ItemDragEventArgs e) { if (e.Button == MouseButtons.Left) DragOutDiskNodes(_lvDups); };
             _lvDups.DoubleClick += delegate
             {
                 if (_lvDups.SelectedItems.Count > 0)
@@ -1698,6 +1735,27 @@ namespace NillyDiskPro
             PopulateExtensionsList();
         }
 
+        private static void SetSortHeaders(ListView lv, string[] baseNames, int sortCol, bool asc)
+        {
+            if (lv == null || lv.Columns.Count < baseNames.Length) return;
+            for (int i = 0; i < baseNames.Length; i++)
+                lv.Columns[i].Text = baseNames[i] + (i == sortCol ? (asc ? " ▲" : " ▼") : "");
+        }
+
+        private void DragOutDiskNodes(ListView lv)
+        {
+            if (lv == null || lv.SelectedItems.Count == 0) return;
+            List<string> paths = new List<string>();
+            for (int i = 0; i < lv.SelectedItems.Count; i++)
+            {
+                DiskNode n = lv.SelectedItems[i].Tag as DiskNode;
+                if (n != null && !string.IsNullOrEmpty(n.FullPath) && (File.Exists(n.FullPath) || Directory.Exists(n.FullPath)))
+                    paths.Add(n.FullPath);
+            }
+            if (paths.Count == 0) return;
+            try { lv.DoDragDrop(new DataObject(DataFormats.FileDrop, paths.ToArray()), DragDropEffects.Copy | DragDropEffects.Link); } catch { }
+        }
+
         private void ShowFolder(DiskNode folder)
         {
             _currentDir = folder;
@@ -1707,12 +1765,32 @@ namespace NillyDiskPro
 
             _lvNodes.BeginUpdate();
             _lvNodes.Items.Clear();
+            if (folder.Parent != null)
+            {
+                ListViewItem up = new ListViewItem("↩ ..");
+                up.SubItems.Add("");
+                up.SubItems.Add("Επάνω φάκελος");
+                up.SubItems.Add("");
+                up.Tag = "UP";
+                _lvNodes.Items.Add(up);
+            }
             if (folder.Children != null)
             {
-                int max = Math.Min(400, folder.Children.Count);
+                List<DiskNode> sorted = new List<DiskNode>(folder.Children);
+                int sign = _nodeSortAsc ? 1 : -1;
+                sorted.Sort(delegate(DiskNode a, DiskNode b)
+                {
+                    int cmp = 0;
+                    if (_nodeSortCol == 0) cmp = string.Compare(a.Name, b.Name, StringComparison.OrdinalIgnoreCase);
+                    else if (_nodeSortCol == 3) cmp = (a.IsDir ? a.FileCount : 1).CompareTo(b.IsDir ? b.FileCount : 1);
+                    else cmp = a.Size.CompareTo(b.Size);
+                    if (cmp == 0) cmp = string.Compare(a.Name, b.Name, StringComparison.OrdinalIgnoreCase);
+                    return sign * cmp;
+                });
+                int max = Math.Min(400, sorted.Count);
                 for (int i = 0; i < max; i++)
                 {
-                    DiskNode ch = folder.Children[i];
+                    DiskNode ch = sorted[i];
                     double pct = folder.Size > 0 ? (ch.Size * 100.0 / folder.Size) : 0;
                     ListViewItem it = new ListViewItem((ch.IsDir ? "▸ " : "  ") + ch.Name);
                     it.SubItems.Add(SafetyGuard.FmtBytes(ch.Size));
@@ -1731,12 +1809,28 @@ namespace NillyDiskPro
         {
             if (_lastScan == null) return;
             string q = (_txtFilterFiles.Text ?? "").Trim();
-            _lvTopFiles.BeginUpdate();
-            _lvTopFiles.Items.Clear();
+            List<DiskNode> rows = new List<DiskNode>(_lastScan.TopFiles.Count);
             for (int i = 0; i < _lastScan.TopFiles.Count; i++)
             {
                 DiskNode f = _lastScan.TopFiles[i];
-                if (q.Length > 0 && f.FullPath.IndexOf(q, StringComparison.OrdinalIgnoreCase) < 0) continue;
+                if (q.Length == 0 || f.FullPath.IndexOf(q, StringComparison.OrdinalIgnoreCase) >= 0) rows.Add(f);
+            }
+            int sign = _topSortAsc ? 1 : -1;
+            rows.Sort(delegate(DiskNode a, DiskNode b)
+            {
+                int cmp = 0;
+                if (_topSortCol == 0) cmp = string.Compare(a.Name, b.Name, StringComparison.OrdinalIgnoreCase);
+                else if (_topSortCol == 2) cmp = a.Modified.CompareTo(b.Modified);
+                else if (_topSortCol == 3) cmp = string.Compare(a.FullPath, b.FullPath, StringComparison.OrdinalIgnoreCase);
+                else cmp = a.Size.CompareTo(b.Size);
+                if (cmp == 0) cmp = string.Compare(a.Name, b.Name, StringComparison.OrdinalIgnoreCase);
+                return sign * cmp;
+            });
+            _lvTopFiles.BeginUpdate();
+            _lvTopFiles.Items.Clear();
+            for (int i = 0; i < rows.Count; i++)
+            {
+                DiskNode f = rows[i];
                 ListViewItem it = new ListViewItem(f.Name);
                 it.SubItems.Add(SafetyGuard.FmtBytes(f.Size));
                 it.SubItems.Add(f.Modified > DateTime.MinValue ? f.Modified.ToString("dd/MM/yyyy HH:mm") : "—");
@@ -1750,12 +1844,22 @@ namespace NillyDiskPro
         private void PopulateExtensionsList()
         {
             if (_lastScan == null) return;
+            List<ExtStat> rows = new List<ExtStat>(_lastScan.Extensions);
+            int sign = _extSortAsc ? 1 : -1;
+            rows.Sort(delegate(ExtStat a, ExtStat b)
+            {
+                int cmp = 0;
+                if (_extSortCol == 0) cmp = string.Compare(a.Ext, b.Ext, StringComparison.OrdinalIgnoreCase);
+                else if (_extSortCol == 2) cmp = a.FileCount.CompareTo(b.FileCount);
+                else cmp = a.TotalBytes.CompareTo(b.TotalBytes);
+                return sign * cmp;
+            });
             _lvExts.BeginUpdate();
             _lvExts.Items.Clear();
-            int max = Math.Min(150, _lastScan.Extensions.Count);
+            int max = Math.Min(150, rows.Count);
             for (int i = 0; i < max; i++)
             {
-                ExtStat st = _lastScan.Extensions[i];
+                ExtStat st = rows[i];
                 double pct = _lastScan.TotalBytes > 0 ? (st.TotalBytes * 100.0 / _lastScan.TotalBytes) : 0;
                 ListViewItem it = new ListViewItem(st.Ext);
                 it.SubItems.Add(SafetyGuard.FmtBytes(st.TotalBytes));
