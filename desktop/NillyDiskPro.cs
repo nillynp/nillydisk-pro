@@ -25,8 +25,8 @@ using System.Windows.Forms;
 [assembly: AssemblyProduct("NillyDisk Pro")]
 [assembly: AssemblyCopyright("Copyright (c) 2026 Nilly graphics (Sotiris Christos) — https://nillygraphics.com/")]
 [assembly: AssemblyTrademark("Nilly graphics / Nillygraphics — Sotiris Christos")]
-[assembly: AssemblyVersion("1.2.0.0")]
-[assembly: AssemblyFileVersion("1.2.0.0")]
+[assembly: AssemblyVersion("1.2.1.0")]
+[assembly: AssemblyFileVersion("1.2.1.0")]
 
 namespace NillyDiskPro
 {
@@ -1288,7 +1288,7 @@ namespace NillyDiskPro
             _btnStop = MkBtn("■ Διακοπή", 596, 10, 86, 28, delegate { _cancelScan = true; });
             _btnStop.Enabled = false;
             _lblScanStatus = new Label { Left = 694, Top = 10, Width = 390, Height = 28, TextAlign = ContentAlignment.MiddleLeft, Font = new Font("Segoe UI", 9f), Text = "Έτοιμο (100% Read-Only σάρωση)" };
-            _btnTheme = MkBtn("☀", 1090, 10, 34, 28, delegate { _dark = !_dark; ApplyTheme(); });
+            _btnTheme = MkBtn("◐", 1090, 10, 34, 28, delegate { _dark = !_dark; ApplyTheme(); });
             _btnTheme.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             _lblScanStatus.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             _topBar.Controls.AddRange(new Control[] { _cmbTarget, _btnBrowse, _btnScan, _btnStop, _lblScanStatus, _btnTheme });
@@ -1647,7 +1647,7 @@ namespace NillyDiskPro
             _lblCrumb.ForeColor = _fgMain;
             _lblDupSummary.BackColor = _bgPanel; _lblDupSummary.ForeColor = _fgMain;
             _lblCacheSummary.ForeColor = _fgMain;
-            _btnTheme.Text = _dark ? "☀" : "🌙";
+            _btnTheme.Text = "◐";
             _treemap.IsDark = _dark; _treemap.Invalidate();
 
             StyleTree(this);
