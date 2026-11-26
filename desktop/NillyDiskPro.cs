@@ -25,8 +25,8 @@ using System.Windows.Forms;
 [assembly: AssemblyProduct("NillyDisk Pro")]
 [assembly: AssemblyCopyright("Copyright (c) 2026 Nilly graphics (Sotiris Christos) — https://nillygraphics.com/")]
 [assembly: AssemblyTrademark("Nilly graphics / Nillygraphics — Sotiris Christos")]
-[assembly: AssemblyVersion("1.2.1.0")]
-[assembly: AssemblyFileVersion("1.2.1.0")]
+[assembly: AssemblyVersion("1.2.2.0")]
+[assembly: AssemblyFileVersion("1.2.2.0")]
 
 namespace NillyDiskPro
 {
@@ -1296,10 +1296,10 @@ namespace NillyDiskPro
             // Nav Bar (4 Pro Tabs — crisp symbols + UseMnemonic=false so '&' renders cleanly!)
             _navBar = new Panel { Dock = DockStyle.Top, Height = 36, Padding = new Padding(10, 3, 10, 3) };
             string[] tabTitles = new string[] {
-                "▦  Ανάλυση & Treemap",
-                "▲  Μεγαλύτερα Αρχεία & Τύποι",
-                "⧉  Διπλότυπα (SHA-256)",
-                "✦  Ασφαλής Καθαρισμός Cache"
+                "Ανάλυση & Treemap",
+                "Μεγαλύτερα Αρχεία & Τύποι",
+                "Διπλότυπα (SHA-256)",
+                "Καθαρισμός Cache"
             };
             int nx = 10;
             for (int i = 0; i < 4; i++)
@@ -1487,14 +1487,14 @@ namespace NillyDiskPro
             _cmbDupMin.Items.AddRange(new object[] { "1 MB+", "100 KB+", "10 MB+", "50 MB+" });
             _cmbDupMin.SelectedIndex = 0;
 
-            _btnFindDups = MkBtn("⧉ Εύρεση Διπλοτύπων (SHA-256)", 198, 8, 224, 28, delegate { RunDuplicateSearch(); });
-            _btnAutoOlder = MkBtn("⚡ Επιλογή Παλαιότερων", 430, 8, 170, 28, delegate { AutoSelectOlderDuplicates(); });
+            _btnFindDups = MkBtn("Εύρεση Διπλοτύπων (SHA-256)", 198, 8, 224, 28, delegate { RunDuplicateSearch(); });
+            _btnAutoOlder = MkBtn("Επιλογή Παλαιότερων", 430, 8, 170, 28, delegate { AutoSelectOlderDuplicates(); });
             _btnClearDups = MkBtn("Αποεπιλογή", 608, 8, 94, 28, delegate { foreach (ListViewItem it in _lvDups.Items) it.Checked = false; });
-            _btnTrashDups = MkBtn("× Επιλεγμένα στον Κάδο", 710, 8, 180, 28, delegate { MoveSelectedDuplicatesToTrash(); });
+            _btnTrashDups = MkBtn("Επιλεγμένα στον Κάδο", 710, 8, 180, 28, delegate { MoveSelectedDuplicatesToTrash(); });
 
             bar.Controls.AddRange(new Control[] { lMin, _cmbDupMin, _btnFindDups, _btnAutoOlder, _btnClearDups, _btnTrashDups });
 
-            _lblDupSummary = new Label { Dock = DockStyle.Top, Height = 26, Padding = new Padding(12, 0, 10, 0), TextAlign = ContentAlignment.MiddleLeft, Font = new Font("Segoe UI", 9f, FontStyle.Bold), Text = "Κάνε πρώτα «▶ Σάρωση» και μετά «⧉ Εύρεση Διπλοτύπων» — 100% επαλήθευση SHA-256, κρατάει πάντα τουλάχιστον 1 πρωτότυπο!" };
+            _lblDupSummary = new Label { Dock = DockStyle.Top, Height = 26, Padding = new Padding(12, 0, 10, 0), TextAlign = ContentAlignment.MiddleLeft, Font = new Font("Segoe UI", 9f, FontStyle.Bold), Text = "Κάνε πρώτα «Σάρωση» και μετά «Εύρεση Διπλοτύπων» — 100% επαλήθευση SHA-256, κρατάει πάντα τουλάχιστον 1 πρωτότυπο." };
 
             _lvDups = new ListView { Dock = DockStyle.Fill, View = View.Details, CheckBoxes = true, FullRowSelect = true, BorderStyle = BorderStyle.None, Font = new Font("Segoe UI", 9f) };
             _lvDups.Columns.Add("Ομάδα / Αρχείο", 240);
@@ -1523,7 +1523,7 @@ namespace NillyDiskPro
             Panel p = new Panel();
             Panel bar = new Panel { Dock = DockStyle.Top, Height = 44, Padding = new Padding(10, 7, 10, 7) };
             _btnRefreshCache = MkBtn("↻ Επανυπολογισμός Caches", 10, 8, 195, 28, delegate { RefreshCacheTargetsAsync(); });
-            _btnCleanCache = MkBtn("✦ Ασφαλής Καθαρισμός Επιλεγμένων", 214, 8, 250, 28, delegate { CleanSelectedCaches(); });
+            _btnCleanCache = MkBtn("Καθαρισμός Επιλεγμένων", 214, 8, 210, 28, delegate { CleanSelectedCaches(); });
             _lblCacheSummary = new Label { Left = 476, Top = 8, Width = 660, Height = 28, TextAlign = ContentAlignment.MiddleLeft, Font = new Font("Segoe UI", 9f, FontStyle.Bold), Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right, Text = "Υπολογισμός ασφαλών regenerable caches..." };
             bar.Controls.AddRange(new Control[] { _btnRefreshCache, _btnCleanCache, _lblCacheSummary });
 
@@ -1615,25 +1615,25 @@ namespace NillyDiskPro
         {
             if (_dark)
             {
-                _bgMain = Color.FromArgb(24, 25, 28);
-                _bgPanel = Color.FromArgb(30, 32, 37);
-                _bgCard = Color.FromArgb(38, 40, 46);
-                _bgInput = Color.FromArgb(28, 30, 35);
-                _fgMain = Color.FromArgb(240, 242, 246);
-                _fgMuted = Color.FromArgb(154, 162, 174);
-                _border = Color.FromArgb(56, 60, 70);
+                _bgMain = Color.FromArgb(24, 26, 31);
+                _bgPanel = Color.FromArgb(31, 34, 41);
+                _bgCard = Color.FromArgb(39, 43, 52);
+                _bgInput = Color.FromArgb(28, 30, 36);
+                _fgMain = Color.FromArgb(236, 239, 244);
+                _fgMuted = Color.FromArgb(148, 157, 174);
+                _border = Color.FromArgb(52, 57, 68);
                 _accent = Color.FromArgb(252, 150, 31); // Signature Nilly Orange!
             }
             else
             {
-                _bgMain = Color.FromArgb(245, 247, 250);
-                _bgPanel = Color.FromArgb(236, 239, 245);
+                _bgMain = Color.FromArgb(248, 249, 251);
+                _bgPanel = Color.FromArgb(238, 241, 246);
                 _bgCard = Color.White;
                 _bgInput = Color.White;
-                _fgMain = Color.FromArgb(24, 26, 30);
-                _fgMuted = Color.FromArgb(95, 105, 118);
-                _border = Color.FromArgb(212, 218, 226);
-                _accent = Color.FromArgb(234, 128, 12);
+                _fgMain = Color.FromArgb(28, 32, 40);
+                _fgMuted = Color.FromArgb(98, 108, 125);
+                _border = Color.FromArgb(210, 216, 226);
+                _accent = Color.FromArgb(224, 118, 12);
             }
 
             Native.SetDarkTitlebar(Handle, _dark);
@@ -1949,7 +1949,7 @@ namespace NillyDiskPro
             string filesExe = FindSiblingExe("NillyFilesPro", "NillyFilesPro.exe");
             if (filesExe != null)
             {
-                cms.Items.Add("📂 Άνοιγμα σε NillyFiles Pro", null, delegate
+                cms.Items.Add("Άνοιγμα σε NillyFiles Pro", null, delegate
                 {
                     DiskNode n = getter();
                     if (n != null)
@@ -1959,18 +1959,18 @@ namespace NillyDiskPro
                     }
                 });
             }
-            cms.Items.Add("📂 Άνοιγμα στον Windows Explorer", null, delegate
+            cms.Items.Add("Άνοιγμα στον Windows Explorer", null, delegate
             {
                 DiskNode n = getter();
                 if (n != null) OpenInExplorer(n.FullPath, !n.IsDir);
             });
-            cms.Items.Add("📋 Αντιγραφή διαδρομής", null, delegate
+            cms.Items.Add("Αντιγραφή διαδρομής", null, delegate
             {
                 DiskNode n = getter();
                 if (n != null) { try { Clipboard.SetText(n.FullPath); } catch { } }
             });
             cms.Items.Add(new ToolStripSeparator());
-            cms.Items.Add("🗑 Μεταφορά στον Κάδο (Ασφαλής Διαγραφή)", null, delegate
+            cms.Items.Add("Μεταφορά στον Κάδο (Ασφαλής Διαγραφή)", null, delegate
             {
                 DiskNode n = getter();
                 if (n != null) SafeDeleteNode(n);
